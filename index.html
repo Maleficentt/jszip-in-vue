@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>jszip的使用</title>
+    <link rel="stylesheet" type="text/css" href="http://unpkg.com/iview/dist/styles/iview.css">
+    <script type="text/javascript" src="http://vuejs.org/js/vue.min.js"></script>
+    <script type="text/javascript" src="http://unpkg.com/iview/dist/iview.min.js"></script>
+    <script type="text/javascript" src="./node_modules/jszip/dist/jszip.min.js"></script>
+    <style>
+        #app {
+            padding: 20px;
+        }
+
+        img {
+            width: 200px;
+        }
+
+        .file-container {
+            padding: 10px;
+        }
+
+        .file-container .file-item {
+            border: 1px solid #ccc;
+        }
+
+        .file-container .file-item .title {
+            color: #666;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .file-container .file-item .content {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div>
+            <h1>解压</h1>
+            <input type="file" accept=".zip" @change="handleClick" />
+            <div>
+                <h2>解压后的文件</h2>
+                <div class="file-container">
+                    <div class="file-item" v-for="(item, index) in dataList" :key="index">
+                        <p class="title">{{item.fileName}}</p>
+                        <div class="content">
+                            <img v-if="item.type === 'img'" :src="item.content" alt="">
+                            <p v-if="item.type === 'text'">{{item.content}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div>
+            <h1>加压</h1>
+            
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                dataList: []
+            },
+            methods: {
+                handleClick(e) {
+                    const zipFile = e.target.files[0]
+                    const jszip = new JSZip()
+                    this.dataList.length = 0
+                    jszip.loadAsync(zipFile).then((zip) => { // 读取zip
+                        for (let key in zip.files) { // 判断是否是目录
+                            if (!zip.files[key].dir) {
+                                if (/\.(png|jpg|jpeg|gif)$/.test(zip.files[key].name)) { // 判断是否是图片格式
+                                    let base = zip.file(zip.files[key].name).async(
+                                        'base64') // 将图片转化为base64格式
+                                    base.then(res => {
+                                        this.dataList.push({
+                                            fileName: zip.files[key].name,
+                                            type: 'img',
+                                            content: `data:image/png;base64,${res}`
+                                        })
+                                    })
+                                }
+                                if (/\.(txt)$/.test(zip.files[key].name)) { // 判断是否是文本文件
+                                    let base = zip.file(zip.files[key].name).async(
+                                        'string') // 以字符串形式输出文本内容
+                                    base.then(res => {
+                                        this.dataList.push({
+                                            fileName: zip.files[key].name,
+                                            type: 'text',
+                                            content: res
+                                        })
+                                    })
+                                }
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
