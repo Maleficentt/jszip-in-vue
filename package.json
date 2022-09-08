@@ -21,7 +21,7 @@
   "homepage": "https://github.com/13660539818/jszip-in-vue#readme",
   "dependencies": {
     "file-saver": "^2.0.2",
-    "jszip": "^3.2.2",
+    "jszip": "^3.7.0",
     "vue": "^2.6.10"
   }
 }
